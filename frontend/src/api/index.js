@@ -177,7 +177,7 @@ export const getTasks = (params) => {
   return apiClient.get("/task/get/tasks", { params });
 }
 export const getProjectTask = (data) => {
-  return apiClient.get(`/task/get/task/${data.projectId}`); // legacy
+  return apiClient.get(`/task/get/tasks`, { params: { projectId: data.projectId } });
 }
 
 export const updateTask = (taskId, data) => {
@@ -208,8 +208,15 @@ export const getTeamReports = (teamId, params) => {
   return apiClient.get(`/report/team/${teamId}`, { params });
 }
 
-export const getTaskReports = (data) => {
-  return apiClient.get(`/report/task/${data.taskId}`); // legacy
+export const getTaskReports = async (data) => {
+  try {
+    return await apiClient.get(`/report/team/${data.teamId}`, { params: { memberId: data.memberId } });
+  } catch (err) {
+    if (err.response?.status === 403 || err.response?.status === 401) {
+      return await apiClient.get(`/report/my-reports`, { params: { projectId: data.projectId } });
+    }
+    throw err;
+  }
 }
 
 

@@ -173,7 +173,12 @@ const ReportsModal = ({ isOpen, onClose, task }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getTaskReports({ taskId: task._id });
+      const response = await getTaskReports({ 
+        taskId: task._id,
+        teamId: task.teamId?._id || task.teamId,
+        memberId: task.assignedTo?._id || task.assignedTo,
+        projectId: task.projectId?._id || task.projectId
+      });
       setReports(response?.data?.data || response?.data || []);
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to load reports');
@@ -189,7 +194,12 @@ const ReportsModal = ({ isOpen, onClose, task }) => {
     setSubmitting(true);
     setError(null);
     try {
-      const response = await submitTaskReport({ taskId: task._id, reportText: newReport });
+      const response = await submitTaskReport({ 
+        projectId: task.projectId?._id || task.projectId,
+        teamId: task.teamId?._id || task.teamId,
+        reportText: newReport,
+        date: new Date().toISOString()
+      });
       const addedReport = response?.data?.data || response?.data;
       if (addedReport) {
          setReports(prev => [addedReport, ...prev]);
@@ -532,8 +542,8 @@ const TaskComponent = ({ projectId, members, currentUserRole }) => {
 
     try {
       const response = await getProjectTask({ projectId });
-      const taskData = response?.data || response || [];
-      setTasks(taskData);
+      const taskData = response?.data?.data || response?.data || [];
+      setTasks(Array.isArray(taskData) ? taskData : []);
     } catch (err) {
       console.error("Failed to load tasks:", err);
       setError(err.message || 'Failed to load tasks');
